@@ -90,7 +90,7 @@ export const PermissionExportPlugin: Plugin = async (ctx) => {
       if (input.event.type === "permission.replied") {
         const props = input.event.properties
         const permission = tracker.getPermission(props.permissionID)
-        if (permission && props.response === "allow") {
+        if (permission && (props.response === "once" || props.response === "always")) {
           const tool = permission.type
           const pattern = extractPattern(permission)
           tracker.add({ tool, pattern, outcome: "granted" })
