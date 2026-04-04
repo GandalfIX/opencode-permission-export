@@ -75,6 +75,47 @@ function extractCommandGroup(pattern: string): string {
   return parts[0] ?? "*"
 }
 
+interface GroupOptions {
+  minGroupSize?: number
+  excludeCommands?: string[]
+}
+
+const DEFAULT_EXCLUDE_COMMANDS = ["rm", "sudo", "curl", "wget"]
+
+function groupPermissions(events: PermissionEvent[], options: GroupOptions = {}): PermissionEvent[] {
+  const { minGroupSize = 2, excludeCommands = DEFAULT_EXCLUDE_COMMANDS } = options
+  const groups = new Map<string, PermissionEvent>()
+
+  for (const event of events) {
+    if (event.tool !== "bash") {
+      groups.set(`${event.tool}:${event.pattern}`, event)
+      continue
+    }
+
+    const commandGroup = extractCommandGroup(event.pattern)
+
+    if (excludeCommands.includes(commandGroup)) {
+      groups.set(`${event.tool}:${event.pattern}`, event)
+      continue
+    }
+
+    const groupKey = `${event.tool}:${commandGroup}:*`
+    if (groups.has(groupKey)) continue
+
+    const sameGroupCount = events.filter(
+      e => e.tool === "bash" && extractCommandGroup(e.pattern) === commandGroup
+    ).length
+
+    if (sameGroupCount >= minGroupSize) {
+      groups.set(groupKey, { tool: "bash", pattern: `${commandGroup}:*`, outcome: event.outcome })
+    } else {
+      groups.set(`${event.tool}:${event.pattern}`, event)
+    }
+  }
+
+  return Array.from(groups.values())
+}
+
 function generateConfig(events: PermissionEvent[]): Record<string, unknown> {
   const permission: Record<string, Record<string, string>> = {}
 
@@ -135,4 +176,5 @@ export const PermissionExportPlugin: Plugin = async (ctx) => {
 
 export default PermissionExportPlugin
 
-export { extractCommandGroup }
+export { extractCommandGroup, groupPermissions }
+export type { PermissionEvent }

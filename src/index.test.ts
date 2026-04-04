@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest"
-import { extractCommandGroup } from "./index.js"
+import { extractCommandGroup, groupPermissions } from "./index.js"
+import type { PermissionEvent } from "./index.js"
 
 describe("extractCommandGroup", () => {
   it("extracts git command group", () => {
@@ -18,5 +19,31 @@ describe("extractCommandGroup", () => {
 
   it("returns first word for unknown commands", () => {
     expect(extractCommandGroup("mkdir -p dir")).toBe("mkdir")
+  })
+})
+
+describe("groupPermissions", () => {
+  it("groups git commands under git:*", () => {
+    const events: PermissionEvent[] = [
+      { tool: "bash", pattern: "git status", outcome: "granted" },
+      { tool: "bash", pattern: "git diff", outcome: "granted" },
+    ]
+    expect(groupPermissions(events)).toEqual([
+      { tool: "bash", pattern: "git:*", outcome: "granted" },
+    ])
+  })
+
+  it("keeps single commands as-is", () => {
+    const events: PermissionEvent[] = [
+      { tool: "bash", pattern: "pnpm dev", outcome: "granted" },
+    ]
+    expect(groupPermissions(events)).toEqual(events)
+  })
+
+  it("preserves non-bash tools unchanged", () => {
+    const events: PermissionEvent[] = [
+      { tool: "edit", pattern: "file.ts", outcome: "granted" },
+    ]
+    expect(groupPermissions(events)).toEqual(events)
   })
 })
