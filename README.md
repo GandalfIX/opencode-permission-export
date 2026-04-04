@@ -4,11 +4,15 @@ OpenCode plugin that exports granted permissions as a config snippet.
 
 ## Installation
 
+```bash
+npm install @gandalfix/opencode-permission-export
+```
+
 Add to your `opencode.json`:
 
 ```json
 {
-  "plugin": ["/path/to/opencode-permission-export"]
+  "plugin": ["@gandalfix/opencode-permission-export"]
 }
 ```
 
