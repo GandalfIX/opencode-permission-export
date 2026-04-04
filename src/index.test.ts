@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { extractCommandGroup, groupPermissions } from "./index.js"
+import { extractCommandGroup, groupPermissions, generateConfig } from "./index.js"
 import type { PermissionEvent } from "./index.js"
 
 describe("extractCommandGroup", () => {
@@ -45,5 +45,21 @@ describe("groupPermissions", () => {
       { tool: "edit", pattern: "file.ts", outcome: "granted" },
     ]
     expect(groupPermissions(events)).toEqual(events)
+  })
+})
+
+describe("generateConfig with grouping", () => {
+  it("outputs grouped permissions", () => {
+    const events: PermissionEvent[] = [
+      { tool: "bash", pattern: "git status", outcome: "granted" },
+      { tool: "bash", pattern: "git diff", outcome: "granted" },
+      { tool: "bash", pattern: "pnpm build", outcome: "granted" },
+      { tool: "bash", pattern: "pnpm test", outcome: "granted" },
+    ]
+    const result = generateConfig(events) as { permission: Record<string, Record<string, string>> }
+    expect(result.permission.bash).toEqual({
+      "git:*": "allow",
+      "pnpm:*": "allow",
+    })
   })
 })

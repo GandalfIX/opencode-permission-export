@@ -117,9 +117,10 @@ function groupPermissions(events: PermissionEvent[], options: GroupOptions = {})
 }
 
 function generateConfig(events: PermissionEvent[]): Record<string, unknown> {
+  const grouped = groupPermissions(events)
   const permission: Record<string, Record<string, string>> = {}
 
-  for (const event of events) {
+  for (const event of grouped) {
     if (!permission[event.tool]) {
       permission[event.tool] = {}
     }
@@ -176,5 +177,5 @@ export const PermissionExportPlugin: Plugin = async (ctx) => {
 
 export default PermissionExportPlugin
 
-export { extractCommandGroup, groupPermissions }
+export { extractCommandGroup, groupPermissions, generateConfig }
 export type { PermissionEvent }
