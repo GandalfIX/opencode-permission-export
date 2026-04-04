@@ -69,6 +69,12 @@ function extractPattern(permission: StoredPermission): string {
   return "*"
 }
 
+function extractCommandGroup(pattern: string): string {
+  const firstCommand = pattern.split(",")[0]?.trim() ?? pattern
+  const parts = firstCommand.split(/\s+/)
+  return parts[0] ?? "*"
+}
+
 function generateConfig(events: PermissionEvent[]): Record<string, unknown> {
   const permission: Record<string, Record<string, string>> = {}
 
@@ -128,3 +134,5 @@ export const PermissionExportPlugin: Plugin = async (ctx) => {
 }
 
 export default PermissionExportPlugin
+
+export { extractCommandGroup }
