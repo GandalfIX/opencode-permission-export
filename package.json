@@ -14,8 +14,20 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
   },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GandalfIX/opencode-permission-exporter.git"
+  },
+  "bugs": "https://github.com/GandalfIX/opencode-permission-exporter/issues",
+  "homepage": "https://github.com/GandalfIX/opencode-permission-exporter#readme",
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.0.0"
   },
