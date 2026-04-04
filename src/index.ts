@@ -1,12 +1,6 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import { tool } from "@opencode-ai/plugin"
 import type { Event } from "@opencode-ai/sdk"
-import { appendFileSync } from "fs"
-
-const log = (...args: unknown[]) => {
-  const message = args.map(a => typeof a === 'string' ? a : JSON.stringify(a, null, 2)).join(' ') + '\n'
-  appendFileSync("event-log.txt", message)
-}
 
 interface StoredPermission {
   id: string
@@ -92,20 +86,13 @@ export const PermissionExportPlugin: Plugin = async (ctx) => {
   return {
     event: async (input: { event: Event }) => {
       const event = input.event as unknown as { type: string; properties: unknown }
-      log("[permission-export] event triggered")
-      log("[permission-export]   event type:", event.type)
-      log("[permission-export]   event:", JSON.stringify(event, null, 2))
       if (event.type === "permission.asked") {
         const props = event.properties as { id: string; permission: string; patterns: string[]; metadata?: Record<string, unknown> }
         tracker.storePermission({ id: props.id, type: props.permission, patterns: props.patterns, metadata: props.metadata || {} })
-        log("[permission-export]   stored permission id:", props.id)
       }
       if (event.type === "permission.replied") {
         const props = event.properties as { requestID: string; reply: string }
-        log("[permission-export]   requestID:", props.requestID)
-        log("[permission-export]   reply:", props.reply)
         const permission = tracker.getPermission(props.requestID)
-        log("[permission-export]   found permission:", permission ? "yes" : "no")
         if (permission && (props.reply === "once" || props.reply === "always")) {
           const tool = permission.type
           const pattern = extractPattern(permission)
