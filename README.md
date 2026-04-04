@@ -52,7 +52,7 @@ The tool outputs a JSON snippet you can copy into your `opencode.json`:
 
 ## How It Works
 
-1. Hooks into `permission.asked` and `permission.replied` events
+1. Hooks into `permission.ask` and `permission.replied` events
 2. Tracks which permissions were granted vs denied
 3. Generates valid OpenCode permission config syntax
 4. Only exports granted permissions (denied are noted but not included)
