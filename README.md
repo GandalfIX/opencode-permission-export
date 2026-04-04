@@ -8,14 +8,6 @@ Add to your `opencode.json`:
 
 ```json
 {
-  "plugin": ["opencode-permission-export"]
-}
-```
-
-Or for local development:
-
-```json
-{
   "plugin": ["/path/to/opencode-permission-export"]
 }
 ```
