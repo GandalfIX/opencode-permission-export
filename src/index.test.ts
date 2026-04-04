@@ -48,6 +48,16 @@ describe("groupPermissions", () => {
   })
 })
 
+describe("groupPermissions threshold", () => {
+  it("respects minimum threshold", () => {
+    const events: PermissionEvent[] = [
+      { tool: "bash", pattern: "git status", outcome: "granted" },
+      { tool: "bash", pattern: "git diff", outcome: "granted" },
+    ]
+    expect(groupPermissions(events, { minGroupSize: 3 })).toEqual(events)
+  })
+})
+
 describe("generateConfig with grouping", () => {
   it("outputs grouped permissions", () => {
     const events: PermissionEvent[] = [
