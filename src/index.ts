@@ -1,6 +1,19 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import { tool } from "@opencode-ai/plugin"
-import type { Permission, Event } from "@opencode-ai/sdk"
+import type { Event } from "@opencode-ai/sdk"
+import { appendFileSync } from "fs"
+
+const log = (...args: unknown[]) => {
+  const message = args.map(a => typeof a === 'string' ? a : JSON.stringify(a, null, 2)).join(' ') + '\n'
+  appendFileSync("event-log.txt", message)
+}
+
+interface StoredPermission {
+  id: string
+  type: string
+  patterns: string[]
+  metadata: Record<string, unknown>
+}
 
 interface PermissionEvent {
   tool: string
@@ -10,13 +23,13 @@ interface PermissionEvent {
 
 class PermissionTracker {
   private events: PermissionEvent[] = []
-  private pendingPermissions: Map<string, Permission> = new Map()
+  private pendingPermissions: Map<string, StoredPermission> = new Map()
 
-  storePermission(permission: Permission): void {
+  storePermission(permission: StoredPermission): void {
     this.pendingPermissions.set(permission.id, permission)
   }
 
-  getPermission(id: string): Permission | undefined {
+  getPermission(id: string): StoredPermission | undefined {
     return this.pendingPermissions.get(id)
   }
 
@@ -49,11 +62,11 @@ class PermissionTracker {
 
 const tracker = new PermissionTracker()
 
-function extractPattern(input: Permission): string {
-  if (input.pattern) {
-    return Array.isArray(input.pattern) ? input.pattern.join(",") : input.pattern
+function extractPattern(permission: StoredPermission): string {
+  if (permission.patterns && permission.patterns.length > 0) {
+    return permission.patterns.join(",")
   }
-  const metadata = input.metadata
+  const metadata = permission.metadata
   if (typeof metadata.command === "string") return metadata.command
   if (typeof metadata.filePath === "string") return metadata.filePath
   if (typeof metadata.path === "string") return metadata.path
@@ -77,20 +90,23 @@ function generateConfig(events: PermissionEvent[]): Record<string, unknown> {
 
 export const PermissionExportPlugin: Plugin = async (ctx) => {
   return {
-    "permission.ask": async (input: Permission, output) => {
-      tracker.storePermission(input)
-      if (output.status === "allow") {
-        const tool = input.type
-        const pattern = extractPattern(input)
-        tracker.add({ tool, pattern, outcome: "granted" })
-      }
-    },
-
     event: async (input: { event: Event }) => {
-      if (input.event.type === "permission.replied") {
-        const props = input.event.properties
-        const permission = tracker.getPermission(props.permissionID)
-        if (permission && (props.response === "once" || props.response === "always")) {
+      const event = input.event as unknown as { type: string; properties: unknown }
+      log("[permission-export] event triggered")
+      log("[permission-export]   event type:", event.type)
+      log("[permission-export]   event:", JSON.stringify(event, null, 2))
+      if (event.type === "permission.asked") {
+        const props = event.properties as { id: string; permission: string; patterns: string[]; metadata?: Record<string, unknown> }
+        tracker.storePermission({ id: props.id, type: props.permission, patterns: props.patterns, metadata: props.metadata || {} })
+        log("[permission-export]   stored permission id:", props.id)
+      }
+      if (event.type === "permission.replied") {
+        const props = event.properties as { requestID: string; reply: string }
+        log("[permission-export]   requestID:", props.requestID)
+        log("[permission-export]   reply:", props.reply)
+        const permission = tracker.getPermission(props.requestID)
+        log("[permission-export]   found permission:", permission ? "yes" : "no")
+        if (permission && (props.reply === "once" || props.reply === "always")) {
           const tool = permission.type
           const pattern = extractPattern(permission)
           tracker.add({ tool, pattern, outcome: "granted" })
