@@ -1,0 +1,27 @@
+{
+  "name": "opencode-permission-export",
+  "version": "1.0.0",
+  "description": "OpenCode plugin to export granted permissions as config snippet",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=1.0.0"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "latest",
+    "typescript": "^5.0.0"
+  },
+  "keywords": ["opencode", "plugin", "permissions"],
+  "license": "MIT"
+}
