@@ -116,8 +116,8 @@ function groupPermissions(events: PermissionEvent[], options: GroupOptions = {})
   return Array.from(groups.values())
 }
 
-function generateConfig(events: PermissionEvent[]): Record<string, unknown> {
-  const grouped = groupPermissions(events)
+function generateConfig(events: PermissionEvent[], skipGrouping = false): Record<string, unknown> {
+  const grouped = skipGrouping ? events : groupPermissions(events)
   const permission: Record<string, Record<string, string>> = {}
 
   for (const event of grouped) {

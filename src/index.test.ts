@@ -73,3 +73,17 @@ describe("generateConfig with grouping", () => {
     })
   })
 })
+
+describe("generateConfig with skipGrouping", () => {
+  it("outputs individual permissions when skipGrouping is true", () => {
+    const events: PermissionEvent[] = [
+      { tool: "bash", pattern: "git status", outcome: "granted" },
+      { tool: "bash", pattern: "git diff", outcome: "granted" },
+    ]
+    const result = generateConfig(events, true) as { permission: Record<string, Record<string, string>> }
+    expect(result.permission.bash).toEqual({
+      "git status": "allow",
+      "git diff": "allow",
+    })
+  })
+})
