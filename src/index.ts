@@ -152,8 +152,10 @@ export const PermissionExportPlugin: Plugin = async (ctx) => {
     tool: {
       "export-permissions": tool({
         description: "Export granted permissions as opencode config snippet. Paste the output into your opencode.json.",
-        args: {},
-        async execute(_args, _context) {
+        args: {
+          format: tool.schema.enum(["combined", "individual"]).optional().default("combined").describe("Export format: 'combined' groups related commands (e.g., git:*), 'individual' exports each permission separately")
+        },
+        async execute(args, context) {
           if (!tracker.hasEvents()) {
             return "No permissions have been asked this session."
           }
@@ -164,11 +166,13 @@ export const PermissionExportPlugin: Plugin = async (ctx) => {
             return `No permissions were granted. ${denied.length} request(s) were denied.`
           }
 
-          const config = generateConfig(granted)
+          const skipGrouping = args.format === "individual"
+          const config = generateConfig(granted, skipGrouping)
           const denied = tracker.getDenied()
           const deniedNote = denied.length > 0 ? `\n\nNote: ${denied.length} permission(s) were denied and not included.` : ""
 
-          return `Copy this into your opencode.json:\n\n${JSON.stringify(config, null, 2)}${deniedNote}`
+          const formatLabel = skipGrouping ? "individual" : "combined"
+          return `Copy this into your opencode.json (${formatLabel} format):\n\n${JSON.stringify(config, null, 2)}${deniedNote}`
         },
       }),
     },
