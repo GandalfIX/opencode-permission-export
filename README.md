@@ -30,6 +30,27 @@ or
 run export-permissions
 ```
 
+### Format Parameter
+
+The tool accepts a `format` parameter with two options:
+
+- `combined` (default): Merges all permissions into a single config snippet with nested tool/pattern structure
+- `individual`: Outputs each permission as a separate config entry
+
+Example with individual format:
+
+```
+export my permissions with individual format
+```
+
+Output:
+
+```json
+{ "permission": { "bash": { "git status": "allow" } } }
+{ "permission": { "bash": { "npm run *": "allow" } } }
+{ "permission": { "edit": { "src/*.ts": "allow" } } }
+```
+
 The tool outputs a JSON snippet you can copy into your `opencode.json`:
 
 ```json
