@@ -45,10 +45,10 @@ export my permissions with individual format
 
 Output:
 
-```json
-{ "permission": { "bash": { "git status": "allow" } } }
-{ "permission": { "bash": { "npm run *": "allow" } } }
-{ "permission": { "edit": { "src/*.ts": "allow" } } }
+```
+{"permission":{"bash":{"git status":"allow"}}}
+{"permission":{"bash":{"npm run *":"allow"}}}
+{"permission":{"edit":{"src/*.ts":"allow"}}}
 ```
 
 The tool outputs a JSON snippet you can copy into your `opencode.json`:
