@@ -168,30 +168,33 @@ export const PermissionExportPlugin: Plugin = async (ctx) => {
       "export-permissions": tool({
         description: "Export granted permissions as opencode config snippet. Paste the output into your opencode.json.",
         args: {
-          format: tool.schema.enum(["combined", "individual"]).optional().default("combined").describe("Export format: 'combined' groups related commands (e.g., git:*), 'individual' exports each permission separately")
+          format: tool.schema.enum(["combined", "individual"]).optional().default("combined").describe("Export format: 'combined' groups related commands (e.g., git:*), 'individual' exports each permission separately"),
+          filter: tool.schema.enum(["all", "always"]).optional().default("all").describe("Filter permissions: 'all' includes all granted permissions, 'always' only includes permissions granted with 'always'")
         },
         async execute(args, context) {
           if (!tracker.hasEvents()) {
             return "No permissions have been asked this session."
           }
 
-          const granted = tracker.getGranted()
+          const granted = args.filter === "always" ? tracker.getAlways() : tracker.getGranted()
           if (granted.length === 0) {
+            const filterNote = args.filter === "always" ? "always-" : ""
             const denied = tracker.getDenied()
-            return `No permissions were granted. ${denied.length} request(s) were denied.`
+            return `No permissions were granted with "${filterNote}always". ${denied.length} request(s) were denied.`
           }
 
           const denied = tracker.getDenied()
           const deniedNote = denied.length > 0 ? `\n\nNote: ${denied.length} permission(s) were denied and not included.` : ""
+          const filterNote = args.filter === "always" ? " (always only)" : ""
 
           if (args.format === "individual") {
             const configs = generateIndividualConfigs(granted)
             const output = configs.map(c => JSON.stringify(c)).join("\n")
-            return `Copy these into your opencode.json (individual format):\n\n${output}${deniedNote}`
+            return `Copy these into your opencode.json (individual format${filterNote}):\n\n${output}${deniedNote}`
           }
 
           const config = generateConfig(granted, false)
-          return `Copy this into your opencode.json (combined format):\n\n${JSON.stringify(config, null, 2)}${deniedNote}`
+          return `Copy this into your opencode.json (combined format${filterNote}):\n\n${JSON.stringify(config, null, 2)}${deniedNote}`
         },
       }),
     },
