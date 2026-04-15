@@ -13,6 +13,7 @@ interface PermissionEvent {
   tool: string
   pattern: string
   outcome: "granted" | "denied"
+  replyType: "once" | "always"
 }
 
 class PermissionTracker {
@@ -29,7 +30,7 @@ class PermissionTracker {
 
   add(event: PermissionEvent): void {
     const exists = this.events.some(
-      (e) => e.tool === event.tool && e.pattern === event.pattern && e.outcome === event.outcome
+      (e) => e.tool === event.tool && e.pattern === event.pattern && e.outcome === event.outcome && e.replyType === event.replyType
     )
     if (!exists) {
       this.events.push(event)
@@ -42,6 +43,10 @@ class PermissionTracker {
 
   getDenied(): PermissionEvent[] {
     return this.events.filter((e) => e.outcome === "denied")
+  }
+
+  getAlways(): PermissionEvent[] {
+    return this.events.filter((e) => e.outcome === "granted" && e.replyType === "always")
   }
 
   clear(): void {
@@ -107,7 +112,7 @@ function groupPermissions(events: PermissionEvent[], options: GroupOptions = {})
     ).length
 
     if (sameGroupCount >= minGroupSize) {
-      groups.set(groupKey, { tool: "bash", pattern: `${commandGroup}:*`, outcome: event.outcome })
+      groups.set(groupKey, { tool: "bash", pattern: `${commandGroup}:*`, outcome: event.outcome, replyType: event.replyType })
     } else {
       groups.set(`${event.tool}:${event.pattern}`, event)
     }
@@ -154,7 +159,7 @@ export const PermissionExportPlugin: Plugin = async (ctx) => {
         if (permission && (props.reply === "once" || props.reply === "always")) {
           const tool = permission.type
           const pattern = extractPattern(permission)
-          tracker.add({ tool, pattern, outcome: "granted" })
+          tracker.add({ tool, pattern, outcome: "granted", replyType: props.reply as "once" | "always" })
         }
       }
     },
