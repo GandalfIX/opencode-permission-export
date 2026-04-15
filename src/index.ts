@@ -135,15 +135,7 @@ function generateConfig(events: PermissionEvent[], skipGrouping = false): Record
   return { permission }
 }
 
-function generateIndividualConfigs(events: PermissionEvent[]): Record<string, unknown>[] {
-  return events.map(event => ({
-    permission: {
-      [event.tool]: {
-        [event.pattern]: "allow"
-      }
-    }
-  }))
-}
+
 
 export const PermissionExportPlugin: Plugin = async (ctx) => {
   return {
@@ -189,9 +181,8 @@ export const PermissionExportPlugin: Plugin = async (ctx) => {
           const filterSuffix = args.filter === "always" ? " (always only)" : ""
 
           if (args.format === "individual") {
-            const configs = generateIndividualConfigs(granted)
-            const output = configs.map(c => JSON.stringify(c)).join("\n")
-            return `Copy these into your opencode.json (individual format${filterSuffix}):\n\n${output}${deniedNote}`
+            const config = generateConfig(granted, true)
+            return `Copy this into your opencode.json (individual format${filterSuffix}):\n\n${JSON.stringify(config, null, 2)}${deniedNote}`
           }
 
           const config = generateConfig(granted, false)

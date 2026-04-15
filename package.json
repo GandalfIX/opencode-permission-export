@@ -1,6 +1,6 @@
 {
   "name": "@gandalfix/opencode-permission-export",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "OpenCode plugin to export granted permissions as config snippet",
   "type": "module",
   "main": "dist/index.js",
