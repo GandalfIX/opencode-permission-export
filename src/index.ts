@@ -177,24 +177,25 @@ export const PermissionExportPlugin: Plugin = async (ctx) => {
           }
 
           const granted = args.filter === "always" ? tracker.getAlways() : tracker.getGranted()
+          const denied = tracker.getDenied()
           if (granted.length === 0) {
-            const filterNote = args.filter === "always" ? "always-" : ""
-            const denied = tracker.getDenied()
-            return `No permissions were granted with "${filterNote}always". ${denied.length} request(s) were denied.`
+            if (args.filter === "always") {
+              return `No permissions were granted with "always". ${denied.length} request(s) were denied.`
+            }
+            return `No permissions were granted. ${denied.length} request(s) were denied.`
           }
 
-          const denied = tracker.getDenied()
           const deniedNote = denied.length > 0 ? `\n\nNote: ${denied.length} permission(s) were denied and not included.` : ""
-          const filterNote = args.filter === "always" ? " (always only)" : ""
+          const filterSuffix = args.filter === "always" ? " (always only)" : ""
 
           if (args.format === "individual") {
             const configs = generateIndividualConfigs(granted)
             const output = configs.map(c => JSON.stringify(c)).join("\n")
-            return `Copy these into your opencode.json (individual format${filterNote}):\n\n${output}${deniedNote}`
+            return `Copy these into your opencode.json (individual format${filterSuffix}):\n\n${output}${deniedNote}`
           }
 
           const config = generateConfig(granted, false)
-          return `Copy this into your opencode.json (combined format${filterNote}):\n\n${JSON.stringify(config, null, 2)}${deniedNote}`
+          return `Copy this into your opencode.json (combined format${filterSuffix}):\n\n${JSON.stringify(config, null, 2)}${deniedNote}`
         },
       }),
     },
