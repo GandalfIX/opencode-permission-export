@@ -25,24 +25,24 @@ describe("extractCommandGroup", () => {
 describe("groupPermissions", () => {
   it("groups git commands under git:*", () => {
     const events: PermissionEvent[] = [
-      { tool: "bash", pattern: "git status", outcome: "granted" },
-      { tool: "bash", pattern: "git diff", outcome: "granted" },
+      { tool: "bash", pattern: "git status", outcome: "granted", replyType: "always" },
+      { tool: "bash", pattern: "git diff", outcome: "granted", replyType: "always" },
     ]
     expect(groupPermissions(events)).toEqual([
-      { tool: "bash", pattern: "git:*", outcome: "granted" },
+      { tool: "bash", pattern: "git:*", outcome: "granted", replyType: "always" },
     ])
   })
 
   it("keeps single commands as-is", () => {
     const events: PermissionEvent[] = [
-      { tool: "bash", pattern: "pnpm dev", outcome: "granted" },
+      { tool: "bash", pattern: "pnpm dev", outcome: "granted", replyType: "always" },
     ]
     expect(groupPermissions(events)).toEqual(events)
   })
 
   it("preserves non-bash tools unchanged", () => {
     const events: PermissionEvent[] = [
-      { tool: "edit", pattern: "file.ts", outcome: "granted" },
+      { tool: "edit", pattern: "file.ts", outcome: "granted", replyType: "always" },
     ]
     expect(groupPermissions(events)).toEqual(events)
   })
@@ -51,8 +51,8 @@ describe("groupPermissions", () => {
 describe("groupPermissions threshold", () => {
   it("respects minimum threshold", () => {
     const events: PermissionEvent[] = [
-      { tool: "bash", pattern: "git status", outcome: "granted" },
-      { tool: "bash", pattern: "git diff", outcome: "granted" },
+      { tool: "bash", pattern: "git status", outcome: "granted", replyType: "always" },
+      { tool: "bash", pattern: "git diff", outcome: "granted", replyType: "always" },
     ]
     expect(groupPermissions(events, { minGroupSize: 3 })).toEqual(events)
   })
@@ -61,10 +61,10 @@ describe("groupPermissions threshold", () => {
 describe("generateConfig with grouping", () => {
   it("outputs grouped permissions", () => {
     const events: PermissionEvent[] = [
-      { tool: "bash", pattern: "git status", outcome: "granted" },
-      { tool: "bash", pattern: "git diff", outcome: "granted" },
-      { tool: "bash", pattern: "pnpm build", outcome: "granted" },
-      { tool: "bash", pattern: "pnpm test", outcome: "granted" },
+      { tool: "bash", pattern: "git status", outcome: "granted", replyType: "always" },
+      { tool: "bash", pattern: "git diff", outcome: "granted", replyType: "always" },
+      { tool: "bash", pattern: "pnpm build", outcome: "granted", replyType: "always" },
+      { tool: "bash", pattern: "pnpm test", outcome: "granted", replyType: "always" },
     ]
     const result = generateConfig(events) as { permission: Record<string, Record<string, string>> }
     expect(result.permission.bash).toEqual({
@@ -77,8 +77,8 @@ describe("generateConfig with grouping", () => {
 describe("generateConfig with skipGrouping", () => {
   it("outputs individual permissions when skipGrouping is true", () => {
     const events: PermissionEvent[] = [
-      { tool: "bash", pattern: "git status", outcome: "granted" },
-      { tool: "bash", pattern: "git diff", outcome: "granted" },
+      { tool: "bash", pattern: "git status", outcome: "granted", replyType: "always" },
+      { tool: "bash", pattern: "git diff", outcome: "granted", replyType: "always" },
     ]
     const result = generateConfig(events, true) as { permission: Record<string, Record<string, string>> }
     expect(result.permission.bash).toEqual({
